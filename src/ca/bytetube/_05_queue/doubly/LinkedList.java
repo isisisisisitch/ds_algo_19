@@ -1,7 +1,6 @@
-package ca.bytetube._03_list.doubly;
+package ca.bytetube._05_queue.doubly;
 
-import ca.bytetube._03_list.AbstractList;
-import ca.bytetube._03_list.single.SingleLinkedList;
+import ca.bytetube._05_queue.AbstractList;
 
 public class LinkedList<E> extends AbstractList<E> {
     private Node<E> first;
