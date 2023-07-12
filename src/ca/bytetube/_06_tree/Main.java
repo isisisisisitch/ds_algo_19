@@ -17,7 +17,7 @@ public class Main {
         root.right.right.right = new Node(12);
 
         BinaryTree<Integer> binaryTree = new BinaryTree<>();
-        binaryTree.levelOrderTraversal(root);
+        System.out.println(binaryTree.height(root));
 
 
 

@@ -105,13 +105,85 @@ public class BinaryTree<E> {
         if (node == null) return;
         Queue<Node<E>> queue = new LinkedList<>();
         queue.offer(node);
-        while (!queue.isEmpty()){
+        while (!queue.isEmpty()) {
             Node<E> poll = queue.poll();
             System.out.print(poll.element + " ");
             if (poll.left != null) queue.offer(poll.left);
             if (poll.right != null) queue.offer(poll.right);
         }
     }
+
+
+    public int height() {
+        return height(root);
+    }
+
+    public int height0(Node<E> node) {
+        if (node == null) return 0;
+        return Math.max(height0(node.left), height0(node.right)) + 1;
+
+    }
+
+    public int height(Node<E> node) {
+
+        if (node == null) return 0;
+        Queue<Node<E>> queue = new LinkedList<>();
+
+        queue.offer(node);
+        int height = 0;
+        int levelSize = 1;
+        while (!queue.isEmpty()) {
+            Node<E> poll = queue.poll();
+            levelSize--;
+            if (poll.left != null) queue.offer(poll.left);
+            if (poll.right != null) queue.offer(poll.right);
+
+            if (levelSize == 0) {//意味着当前层遍历结束，即将遍历下一层 码值
+                height++;
+                levelSize = queue.size();
+            }
+        }
+        return height;
+
+    }
+
+    public boolean isComplete(){
+       return isComplete(root);
+    }
+
+
+    public boolean isComplete(Node<E> head) {
+        if (head == null) return false;
+        Queue<Node> queue = new LinkedList<>();
+        queue.offer(head);
+        boolean isLeaf = false;
+        while (!queue.isEmpty()) {
+            Node node = queue.poll();
+            if (isLeaf && !node.isLeafNode()) return false;
+            //1.If node.left!=null && node.right!=null,add node.left and node.right to the queue
+            if (node.hasTwoChildren()) {
+                queue.offer(node.left);
+                queue.offer(node.right);
+            }
+
+            //2.If node.left==null && node.right!=null，return false
+            else if (node.left == null && node.right != null) return false;
+
+                //3.If node.left!=null && node.right==null,Then the nodes traversed later should all be leaf nodes
+            else if (node.left != null && node.right == null) {
+                queue.offer(node.left);
+                isLeaf = true;
+
+            }
+            //4.node.left==null && node.right==null Then the nodes traversed later should all be leaf nodes
+            else {
+                isLeaf = true;
+            }
+
+        }
+        return true;
+    }
+
 
     public static class Node<E> {
         E element;
@@ -124,6 +196,14 @@ public class BinaryTree<E> {
         public Node(E element) {
             this.element = element;
 
+        }
+
+        protected boolean hasTwoChildren() {
+            return this.left != null && this.right != null;
+        }
+
+        protected boolean isLeafNode() {
+            return this.left == null && this.right == null;
         }
     }
 
