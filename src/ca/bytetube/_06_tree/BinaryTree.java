@@ -1,23 +1,56 @@
 package ca.bytetube._06_tree;
 
 
+import ca.bytetube._06_tree.printer.BinaryTreeInfo;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
 
-public class BinaryTree<E> {
-    private Node<E> root;
+public class BinaryTree<E> implements BinaryTreeInfo {
+    protected int size;
+    protected Node<E> root;
 
-    public void preOrderTraversal() {
-        preOrderTraversal0(root);
+
+    // number of elements
+    public int size() {
+        return size;
+    }// if it is empty or not
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    // clear all elements
+    public void clear() {
+        root = null;
+        size = 0;
     }
 
 
-    public void preOrderTraversal0(Node<E> node) {
-        if (node == null) return;
-        System.out.print(node.element + " ");
-        preOrderTraversal0(node.left);
-        preOrderTraversal0(node.right);
+    public static abstract class Visitor<E> {
+        boolean stop;
+
+        public abstract boolean visit(E element);
+
+    }
+
+    public void preOrderTraversal() {
+        preOrderTraversal(root);
+    }
+
+    public void preOrderTraversal(Visitor<E> visitor) {
+        if (visitor == null) return;
+        preOrderTraversal0(root, visitor);
+    }
+
+
+    public void preOrderTraversal0(Node<E> node, Visitor<E> visitor) {
+        if (node == null || visitor == null) return;
+        //System.out.print(node.element + " ");
+        visitor.stop = visitor.visit(node.element);
+        preOrderTraversal0(node.left, visitor);
+        preOrderTraversal0(node.right, visitor);
     }
 
     //有右先压右，有左再压左
@@ -37,14 +70,16 @@ public class BinaryTree<E> {
     }
 
     public void inOrderTraversal() {
-        inOrderTraversal0(root);
+        inOrderTraversal(root);
     }
 
-    public void inOrderTraversal0(Node<E> node) {
-        if (node == null) return;
-        inOrderTraversal0(node.left);
-        System.out.print(node.element + " ");
-        inOrderTraversal0(node.right);
+    public void inOrderTraversal0(Node<E> node, Visitor<E> visitor) {
+        if (node == null || visitor == null) return;
+
+        inOrderTraversal0(node.left, visitor);
+        //System.out.print(node.element + " ");
+        visitor.stop = visitor.visit(node.element);
+        inOrderTraversal0(node.right, visitor);
     }
 
     //有左一直压左，否则弹出栈顶元素判断当前节点是否有右，如果有右再压右
@@ -70,16 +105,18 @@ public class BinaryTree<E> {
     }
 
     public void postOrderTraversal() {
-        postOrderTraversal0(root);
+        postOrderTraversal(root);
     }
 
-    public void postOrderTraversal0(Node<E> node) {
-        if (node == null) return;
-        postOrderTraversal0(node.left);
+    public void postOrderTraversal0(Node<E> node, Visitor<E> visitor) {
+        if (node == null || visitor == null) return;
 
-        postOrderTraversal0(node.right);
+        postOrderTraversal0(node.left, visitor);
 
-        System.out.print(node.element + " ");
+        postOrderTraversal0(node.right, visitor);
+
+        //System.out.print(node.element + " ");
+        visitor.stop = visitor.visit(node.element);
     }
 
     public void postOrderTraversal(Node<E> node) {
@@ -147,8 +184,8 @@ public class BinaryTree<E> {
 
     }
 
-    public boolean isComplete(){
-       return isComplete(root);
+    public boolean isComplete() {
+        return isComplete(root);
     }
 
 
@@ -185,10 +222,65 @@ public class BinaryTree<E> {
     }
 
 
+    public Node<E> predecessor(Node<E> node) {
+        if (node == null) return null;
+        //1.node.left != null
+        Node<E> p = node.left;
+        if (p != null) {
+            while (p.right != null) p = p.right;
+            return p;
+        }
+        //2.node.left == null && node.parent != null
+        while (node.parent != null && node == node.parent.left) node = node.parent;
+        return node.parent;
+    }
+
+
+    public Node<E> successor(Node<E> node) {
+        if (node == null) return null;
+        //1.node.right != null
+        Node<E> p = node.right;
+        if (p != null) {
+            while (p.left != null) p = p.left;
+            return p;
+        }
+        //2.node.right == null && node.parent != null
+        while (node.parent != null && node == node.parent.right) node = node.parent;
+        return node.parent;
+    }
+
+    @Override
+    public Object root() {
+
+        return root;
+    }
+
+    @Override
+    public Object left(Object node) {
+        return ((Node<E>) node).left;
+    }
+
+    @Override
+    public Object right(Object node) {
+        return ((Node<E>) node).right;
+    }
+
+    @Override
+    public Object string(Object node) {
+        Node<E> myNode = (Node<E>) node;
+        String parentString = "null";
+        if (myNode.parent != null) {
+            parentString = myNode.parent.element.toString();
+        }
+        return myNode.element + "_p(" + parentString + ")";
+    }
+
+
     public static class Node<E> {
         E element;
         Node<E> left;
         Node<E> right;
+        Node<E> parent;
 
         public Node() {
         }
@@ -198,12 +290,23 @@ public class BinaryTree<E> {
 
         }
 
+        public Node(E element, Node<E> parent) {
+            this.element = element;
+            this.parent = parent;
+
+        }
+
         protected boolean hasTwoChildren() {
             return this.left != null && this.right != null;
         }
 
         protected boolean isLeafNode() {
             return this.left == null && this.right == null;
+        }
+
+        @Override
+        public String toString() {
+            return "element=" + element;
         }
     }
 
